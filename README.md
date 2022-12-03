@@ -29,6 +29,10 @@ The end result is the following structure:
 }
 ```
 
+## Install
+
+`cargo install html-query`
+
 ## Examples
 
 ### Full hacker news story extraction
