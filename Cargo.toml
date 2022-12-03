@@ -2,6 +2,10 @@
 name = "html-query"
 version = "0.0.1"
 edition = "2021"
+authors = ["Tom Forbes <tom@tomforb.es>"]
+repository = "https://github.com/orf/hq"
+license = "MIT"
+description = "jq, but for HTML"
 
 [dependencies]
 anyhow = "1.0.66"
