@@ -9,6 +9,7 @@ use serde_json::{Map, Value};
 use std::io::Read;
 use std::path::PathBuf;
 use std::{fs, io};
+use thiserror::Error;
 
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
@@ -22,24 +23,35 @@ struct Args {
     input: Option<PathBuf>,
 }
 
-fn handle_expression(roots: &[ElementRef], rhs: &Expression, lhs: &Option<Box<Action>>) -> Value {
+#[derive(Error, Debug)]
+pub enum ExpressionError {
+    #[error("Selector `{0} returned no results")]
+    EmptySelector(String),
+
+    #[error("Unexpected empty root node")]
+    EmptyRoot,
+}
+
+fn handle_expression(
+    roots: &[ElementRef],
+    rhs: &Expression,
+    lhs: &Option<Box<Action>>,
+) -> Result<Value, ExpressionError> {
     return match rhs {
-        Expression::Selector(selector) => {
-            // let parsed_selector = parse_selector(selector);
-            let first_root = roots.first().unwrap();
+        Expression::Selector(selector, original_selector) => {
+            let first_root = roots.first().ok_or(ExpressionError::EmptyRoot)?;
             let new_roots: Vec<_> = first_root.select(selector).collect();
-            let first_new_root = match new_roots.first() {
-                None => return Value::Null,
-                Some(v) => v,
-            };
+            let first_new_root = new_roots
+                .first()
+                .ok_or_else(|| ExpressionError::EmptySelector(original_selector.clone()))?;
             match lhs {
-                None => Value::String(first_new_root.text().collect()),
-                Some(lhs) => convert_to_output(lhs, &new_roots),
+                None => Ok(Value::String(first_new_root.text().collect())),
+                Some(lhs) => Ok(convert_to_output(lhs, &new_roots)),
             }
         }
         Expression::Attribute(attr) => {
-            let first_root = roots.first().unwrap();
-            first_root
+            let first_root = roots.first().ok_or(ExpressionError::EmptyRoot)?;
+            Ok(first_root
                 .value()
                 .attrs
                 .get(&QualName::new(
@@ -47,22 +59,22 @@ fn handle_expression(roots: &[ElementRef], rhs: &Expression, lhs: &Option<Box<Ac
                     Namespace::from(""),
                     LocalName::from(attr.as_str()),
                 ))
-                .map_or(Value::Null, |v| Value::String(v.to_string()))
+                .map_or(Value::Null, |v| Value::String(v.to_string())))
         }
         Expression::Text => {
-            let first_root = roots.first().unwrap();
-            Value::String(first_root.text().collect())
+            let first_root = roots.first().ok_or(ExpressionError::EmptyRoot)?;
+            Ok(Value::String(first_root.text().collect()))
         }
         Expression::Parent => {
-            let first_root = roots.first().unwrap();
+            let first_root = roots.first().ok_or(ExpressionError::EmptyRoot)?;
             let parent_root = ElementRef::wrap(first_root.parent().unwrap()).unwrap();
             match lhs {
                 None => handle_expression(&[parent_root], &Expression::Text, &None),
-                Some(lhs) => convert_to_output(lhs, &vec![parent_root]),
+                Some(lhs) => Ok(convert_to_output(lhs, &vec![parent_root])),
             }
         }
         Expression::Sibling(idx) => {
-            let first_root = roots.first().unwrap();
+            let first_root = roots.first().ok_or(ExpressionError::EmptyRoot)?;
             let mut next_sibling_elements = first_root
                 .next_siblings()
                 .filter(|s| s.value().is_element());
@@ -70,7 +82,7 @@ fn handle_expression(roots: &[ElementRef], rhs: &Expression, lhs: &Option<Box<Ac
                 ElementRef::wrap(next_sibling_elements.nth(*idx - 1).unwrap()).unwrap();
             match lhs {
                 None => handle_expression(&[chosen_sibling], &Expression::Text, &None),
-                Some(lhs) => convert_to_output(lhs, &vec![chosen_sibling]),
+                Some(lhs) => Ok(convert_to_output(lhs, &vec![chosen_sibling])),
             }
         }
     };
@@ -97,7 +109,7 @@ fn convert_to_output<'a>(item: &Action, roots: &Vec<ElementRef<'a>>) -> Value {
                 .collect::<Map<_, _>>();
             Value::Object(map)
         }
-        Action::Expression(rhs, lhs) => handle_expression(roots, rhs, lhs),
+        Action::Expression(rhs, lhs) => handle_expression(roots, rhs, lhs).unwrap_or(Value::Null),
     };
 }
 

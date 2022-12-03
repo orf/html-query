@@ -1,7 +1,6 @@
 // This is the first parser I've written using nom. It's based heavily off this one from Nom:
 // https://github.com/Geal/nom/blob/3645656644e3ae5074b61cc57e3f62877ada9190/tests/json.rs
 
-
 use nom::bytes::complete::{take_while, take_while1};
 use nom::combinator::fail;
 use nom::error::{convert_error, VerboseError};
@@ -24,14 +23,14 @@ use std::collections::HashMap;
 pub enum Expression {
     // .foo | @text
     Text,
-    // .foo | @a[href]
+    // .foo | @(href)
     Attribute(String),
     // @parent
     Parent,
     // @sibling(1)
     Sibling(usize),
     // .abc > def
-    Selector(Selector),
+    Selector(Selector, String),
 }
 
 #[derive(Debug, PartialEq)]
@@ -83,10 +82,10 @@ fn expression_rhs(i: &str) -> IResult<&str, Expression, VerboseError<&str>> {
     Ok((new_rest, expression))
 }
 
-fn selector(i: &str) -> IResult<&str, scraper::Selector, VerboseError<&str>> {
+fn selector(i: &str) -> IResult<&str, (Selector, &str), VerboseError<&str>> {
     let (rest, value) = take_while(|c| !matches!(c, ',' | '}'))(i)?;
     match Selector::parse(value) {
-        Ok(v) => Ok((rest, v)),
+        Ok(v) => Ok((rest, (v, value))),
         Err(_) => {
             fail::<_, &str, _>(i)?;
             unreachable!()
@@ -112,7 +111,7 @@ fn expression(i: &str) -> IResult<&str, Expression, VerboseError<&str>> {
             ),
             |v: &str| Expression::Sibling(v.parse::<usize>().unwrap()),
         ),
-        map(selector, Expression::Selector),
+        map(selector, |(sel, val)| Expression::Selector(sel, val.into())),
     ))(i)
 }
 

@@ -304,6 +304,7 @@ dependencies = [
  "pest_derive",
  "scraper",
  "serde_json",
+ "thiserror",
 ]
 
 [[package]]
