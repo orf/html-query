@@ -166,7 +166,7 @@ fn test_nested_attribute() {
     let expected: HashMap<&str, Action> = vec![(
         "foo",
         Action::Expression(
-            Expression::Selector(Selector::parse(".abc").unwrap()),
+            Expression::Selector(Selector::parse(".abc").unwrap(), ".abc ".into()),
             Some(Action::Expression(Expression::Attribute("abc".into()), None).into()),
         ),
     )]
