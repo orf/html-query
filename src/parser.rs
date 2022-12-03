@@ -1,180 +1,178 @@
-use nom::bytes::complete::take_while1;
-use nom::character::complete::alphanumeric1;
-use nom::character::is_alphanumeric;
-use nom::combinator::cond;
-use nom::sequence::pair;
+// This is the first parser I've written using nom. It's based heavily off this one from Nom:
+// https://github.com/Geal/nom/blob/3645656644e3ae5074b61cc57e3f62877ada9190/tests/json.rs
+
+
+use nom::bytes::complete::{take_while, take_while1};
+use nom::combinator::fail;
+use nom::error::{convert_error, VerboseError};
+use nom::multi::many_till;
+use nom::sequence::{pair, terminated};
 use nom::{
     branch::alt,
-    bytes::complete::{escaped, tag, take_until1, take_while},
-    character::complete::{alphanumeric1 as alphanumeric, anychar, char, one_of},
-    combinator::{cut, map, opt, value},
-    error::{context, convert_error, ContextError, ErrorKind, ParseError, VerboseError},
+    bytes::complete::tag,
+    character::complete::{alphanumeric1, char, multispace0},
+    combinator::map,
+    error::ParseError,
     multi::separated_list0,
-    number::complete::double,
-    sequence::{delimited, preceded, separated_pair, terminated},
-    Err, IResult,
+    sequence::{delimited, preceded, separated_pair},
+    IResult, Parser,
 };
+use scraper::Selector;
 use std::collections::HashMap;
-use std::str;
-use std::str::FromStr;
-
-use nom_supreme::error::{BaseErrorKind, ErrorTree, Expectation, StackContext};
-use nom_supreme::parser_ext::ParserExt;
 
 #[derive(Debug, PartialEq)]
-pub enum SelectorType {
-    Selector(String),
+pub enum Expression {
+    // .foo | @text
+    Text,
+    // .foo | @a[href]
     Attribute(String),
+    // @parent
+    Parent,
+    // @sibling(1)
+    Sibling(usize),
+    // .abc > def
+    Selector(Selector),
 }
 
 #[derive(Debug, PartialEq)]
 pub enum Action {
-    Selector(SelectorType),
-    ChildSelector(Option<SelectorType>, HashMap<String, Action>),
-    ForEachChildSelector(SelectorType, HashMap<String, Action>),
+    // selector | [{foo: name }]
+    ForEachChild(HashMap<String, Box<Action>>),
+    // selector | {foo: name }
+    Child(HashMap<String, Box<Action>>),
+    // .foo > bar | ...
+    Expression(Expression, Option<Box<Action>>),
 }
 
-fn sp<'a>(i: &'a str) -> IResult<&'a str, &'a str, VerboseError<&str>> {
-    let chars = " \t\r\n";
-
-    // nom combinators like `take_while` return a function. That function is the
-    // parser,to which we can pass the input
-    let res = take_while(move |c| chars.contains(c))(i);
-    // dbg!(i, &res);
-    res
+fn ws<'a, O, E: ParseError<&'a str>, F: Parser<&'a str, O, E>>(f: F) -> impl Parser<&'a str, O, E> {
+    delimited(multispace0, f, multispace0)
 }
 
-fn valid_identifier<'a>(i: &'a str) -> IResult<&'a str, &'a str, VerboseError<&str>> {
-    take_while1(|c: char| !matches!(c, ':' | '}' | '|'))(i)
+fn object_key(i: &str) -> IResult<&str, &str, VerboseError<&str>> {
+    terminated(alphanumeric1, char(':'))(i)
 }
 
-fn parse_identifier<'a>(i: &'a str) -> IResult<&'a str, &'a str, VerboseError<&str>> {
-    escaped(valid_identifier, '\\', one_of("\"n\\"))(i)
+fn object_key_suffix(i: &str) -> IResult<&str, &str, VerboseError<&str>> {
+    preceded(ws(tag(",")), terminated(alphanumeric1, char(':')))(i)
 }
 
-fn parse_expr(i: &str) -> IResult<&str, SelectorType, VerboseError<&str>> {
-    alt((
-        map(
-                delimited(
-                    tag("@a["),
-                    take_while1(|c: char| !matches!(c, ' ' | ']')),
-                    char(']'),
-                ),
-                |v: &str| SelectorType::Attribute(v.to_string()),
-            ),
-        preceded(sp, map(parse_str, |v|SelectorType::Selector(v.to_string()))),
-    ))(i)
+fn expression_rhs(i: &str) -> IResult<&str, Expression, VerboseError<&str>> {
+    // This code is smelly. The issue here is parsing this expression:
+    // {a: .foo, b: .foo | .bar}
+    //     ^ here
+    // We need to work out what bit to parse next. `, b: .foo` _could_ be part of
+    // our selector? i.e `(.foo, b: .foo) | .bar`
+    // But obviously that's not what we want. So here, we take until we find a `,`, `}` while
+    // `object_key_suffix` does not match.
+    let (_, (matches, _)): (_, (Vec<&str>, _)) = many_till(
+        ws(take_while(|c: char| c != ',' && c != '}')),
+        alt((ws(object_key_suffix), ws(tag("}")))),
+    )(i)?;
+    let rhs = match matches[..] {
+        [first] if first.contains('|') => {
+            let (rhs, _) = first.split_once('|').unwrap();
+            rhs
+        }
+        _ => {
+            fail::<_, &str, _>(i)?;
+            unreachable!()
+        }
+    };
+    let (_, expression) = expression(rhs)?;
+    let new_rest = &i[rhs.len()..];
+    Ok((new_rest, expression))
 }
 
-fn parse_str<'a>(i: &'a str) -> IResult<&'a str, &'a str, VerboseError<&str>> {
-    let parse_str_result = escaped(
-        // take_while1(|c: char| !matches!(c, '|' | ',' | '}') ),
-        valid_identifier,
-        // alphanumeric,
-        '\\',
-        one_of("\"n\\"),
-    )(i);
-    // dbg!(i, &parse_str_result);
-    eprintln!("Parse str result: {} {:?}", i, parse_str_result);
-    parse_str_result
-}
-
-fn parse_string<'a>(i: &'a str) -> IResult<&'a str, &'a str, VerboseError<&str>> {
-    // dbg!(i);
-    context(
-        "string",
-        preceded(char('\"'), cut(terminated(parse_str, char('\"')))),
-    )(i)
-}
-
-fn split_expression(i: &str) -> IResult<&str, Action, VerboseError<&str>> {
-    let sep = map(
-        pair(
-            preceded(sp, parse_expr),
-            pair(
-                preceded(sp, alt((tag("|>"), tag("|[]")))),
-                preceded(sp, hash),
-            ),
-        ),
-        |(selector, (sep, hashmap))| {
-            // println!("split map result {} {:?}", a, sep);
-            return match sep {
-                "|[]" => Action::ForEachChildSelector(selector, hashmap),
-                "|>" => Action::ChildSelector(Some(selector), hashmap),
-                _ => unreachable!("weird sep value? {}", sep),
-            };
-        },
-    )(i);
-    eprintln!("Split expression: Input {}, output: {:?}", i, sep);
-    sep
-}
-
-fn parse_expression<'a>(i: &'a str) -> IResult<&'a str, Action, VerboseError<&str>> {
-    let first = split_expression(i);
-    let second = map(parse_expr, |v| Action::Selector(v))(i);
-    dbg!(&first, &second);
-    match (first, second) {
-        (Ok(v), _) => return Ok(v),
-        (_, Ok(v)) => return Ok(v),
-        (Err(e), _) => return Err(e),
+fn selector(i: &str) -> IResult<&str, scraper::Selector, VerboseError<&str>> {
+    let (rest, value) = take_while(|c| !matches!(c, ',' | '}'))(i)?;
+    match Selector::parse(value) {
+        Ok(v) => Ok((rest, v)),
+        Err(_) => {
+            fail::<_, &str, _>(i)?;
+            unreachable!()
+        }
     }
 }
 
-fn key_value<'a>(i: &'a str) -> IResult<&'a str, (&'a str, Action), VerboseError<&str>> {
-    separated_pair(
-        preceded(sp, valid_identifier),
-        cut(preceded(sp, char(':'))),
-        json_value,
-    )(i)
-}
-
-fn hash<'a>(i: &'a str) -> IResult<&'a str, HashMap<String, Action>, VerboseError<&str>> {
-    eprintln!("Hash: {}", i);
-    context(
-        "map",
-        preceded(
-            char('{'),
-            cut(terminated(
-                map(
-                    separated_list0(preceded(sp, char(',')), key_value),
-                    |tuple_vec| {
-                        tuple_vec
-                            .into_iter()
-                            .map(|(k, v)| (String::from(k), v))
-                            .collect()
-                    },
-                ),
-                preceded(sp, char('}')),
-            )),
+fn expression(i: &str) -> IResult<&str, Expression, VerboseError<&str>> {
+    alt((
+        map(ws(tag("@parent")), |_| Expression::Parent),
+        map(
+            delimited(ws(tag("@(")), take_while(|c: char| c != ')'), ws(tag(")"))),
+            |v: &str| Expression::Attribute(v.to_string()),
         ),
-    )(i)
+        map(preceded(ws(tag("@")), tag("text")), |_: &str| {
+            Expression::Text
+        }),
+        map(
+            delimited(
+                tag("@sibling("),
+                ws(take_while1(|c: char| c.is_ascii_digit())),
+                tag(")"),
+            ),
+            |v: &str| Expression::Sibling(v.parse::<usize>().unwrap()),
+        ),
+        map(selector, Expression::Selector),
+    ))(i)
 }
 
-/// here, we apply the space parser before trying to parse a value
-fn json_value<'a>(i: &'a str) -> IResult<&'a str, Action, VerboseError<&str>> {
-    preceded(
-        sp,
-        alt((
-            map(hash, |h| Action::ChildSelector(None, h)),
-            parse_expression,
-            map(parse_expr, |v| Action::Selector(v)),
-        )),
-    )(i)
+fn object_value(i: &str) -> IResult<&str, Action, VerboseError<&str>> {
+    alt((
+        map(object, |v| {
+            Action::Child(v.into_iter().map(|(k, v)| (k.into(), v.into())).collect())
+        }),
+        map(delimited(ws(char('[')), object, ws(char(']'))), |v| {
+            Action::ForEachChild(v.into_iter().map(|(k, v)| (k.into(), v.into())).collect())
+        }),
+        map(
+            separated_pair(expression_rhs, ws(char('|')), object_value),
+            |v: (Expression, Action)| Action::Expression(v.0, Some(v.1.into())),
+        ),
+        map(expression, |v: Expression| Action::Expression(v, None)),
+    ))(i)
 }
 
-/// the root element of a JSON parser is either an object or an array
-fn root<'a>(i: &'a str) -> IResult<&'a str, Action, VerboseError<&str>> {
-    delimited(
-        sp,
-        alt((map(hash, |v| Action::ChildSelector(None, v)),)),
-        opt(sp),
-    )(i)
-}
-
-pub fn expression(input: &str) -> IResult<&str, Action, VerboseError<&str>> {
-    root(input)
+pub fn object(input: &str) -> IResult<&str, HashMap<&str, Action>, VerboseError<&str>> {
+    map(
+        delimited(
+            char('{'),
+            ws(separated_list0(
+                ws(char(',')),
+                pair(object_key, ws(object_value)),
+            )),
+            char('}'),
+        ),
+        |key_values| key_values.into_iter().collect(),
+    )(input)
 }
 
 pub fn format_error(input: &str, error: VerboseError<&str>) -> String {
     convert_error(input, error)
+}
+
+#[test]
+fn test_attribute() {
+    let expected: HashMap<&str, Action> = vec![(
+        "foo",
+        Action::Expression(Expression::Attribute("abc".into()), None),
+    )]
+    .into_iter()
+    .collect();
+
+    assert_eq!(object("{foo: @(abc)}"), Ok(("", expected)));
+}
+
+#[test]
+fn test_nested_attribute() {
+    let expected: HashMap<&str, Action> = vec![(
+        "foo",
+        Action::Expression(
+            Expression::Selector(Selector::parse(".abc").unwrap()),
+            Some(Action::Expression(Expression::Attribute("abc".into()), None).into()),
+        ),
+    )]
+    .into_iter()
+    .collect();
+
+    assert_eq!(object("{foo: .abc | @(abc)}"), Ok(("", expected)));
 }

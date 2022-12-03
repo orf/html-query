@@ -1,0 +1,19 @@
+[package]
+name = "html-query"
+version = "0.0.1"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.66"
+clap = { version = "4.0.29", features = ["derive"] }
+markup5ever = "0.11.0"
+nom = "7.1.1"
+nom-supreme = "0.8.0"
+pest = "2.5.0"
+pest_derive = "2.5.0"
+scraper = "0.13.0"
+serde_json = "1.0.89"
+
+[[bin]]
+name = "hq"
+path = "src/main.rs"
