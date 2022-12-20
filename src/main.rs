@@ -102,6 +102,12 @@ fn convert_to_output<'a>(item: &Action, roots: &Vec<ElementRef<'a>>) -> Value {
                 })
                 .collect(),
         ),
+        Action::ForEachChildArray(action) => Value::Array(
+            roots
+                .iter()
+                .map(|root| convert_to_output(action, &vec![*root]))
+                .collect(),
+        ),
         Action::Child(hashmap) => {
             let map = hashmap
                 .iter()

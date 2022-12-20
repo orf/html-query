@@ -37,6 +37,8 @@ pub enum Expression {
 pub enum Action {
     // selector | [{foo: name }]
     ForEachChild(HashMap<String, Box<Action>>),
+    // selector | [.name]
+    ForEachChildArray(Box<Action>),
     // selector | {foo: name }
     Child(HashMap<String, Box<Action>>),
     // .foo > bar | ...
@@ -83,7 +85,7 @@ fn expression_rhs(i: &str) -> IResult<&str, Expression, VerboseError<&str>> {
 }
 
 fn selector(i: &str) -> IResult<&str, (Selector, &str), VerboseError<&str>> {
-    let (rest, value) = take_while(|c| !matches!(c, ',' | '}'))(i)?;
+    let (rest, value) = take_while(|c| !matches!(c, ',' | '}' | ']'))(i)?;
     match Selector::parse(value) {
         Ok(v) => Ok((rest, (v, value))),
         Err(_) => {
@@ -122,6 +124,9 @@ fn object_value(i: &str) -> IResult<&str, Action, VerboseError<&str>> {
         }),
         map(delimited(ws(char('[')), object, ws(char(']'))), |v| {
             Action::ForEachChild(v.into_iter().map(|(k, v)| (k.into(), v.into())).collect())
+        }),
+        map(delimited(ws(char('[')), object_value, ws(char(']'))), |v| {
+            Action::ForEachChildArray(v.into())
         }),
         map(
             separated_pair(expression_rhs, ws(char('|')), object_value),
@@ -174,4 +179,82 @@ fn test_nested_attribute() {
     .collect();
 
     assert_eq!(object("{foo: .abc | @(abc)}"), Ok(("", expected)));
+}
+
+#[test]
+fn test_nested() {
+    let expected: HashMap<&str, Action> = vec![(
+        "foo",
+        Action::Expression(
+            Expression::Selector(Selector::parse(".bar").unwrap(), ".bar ".into()),
+            Some(
+                Action::ForEachChild(
+                    [(
+                        "baz".to_string(),
+                        Box::new(Action::Expression(
+                            Expression::Attribute("abc".into()),
+                            None,
+                        )),
+                    )]
+                    .into(),
+                )
+                .into(),
+            ),
+        ),
+    )]
+    .into_iter()
+    .collect();
+
+    assert_eq!(object("{foo: .bar | [{baz: @(abc)}]}"), Ok(("", expected)));
+}
+
+#[test]
+fn test_array_attribute() {
+    let expected: HashMap<&str, Action> = vec![(
+        "foo",
+        Action::Expression(
+            Expression::Selector(Selector::parse(".bar").unwrap(), ".bar ".into()),
+            Some(
+                Action::ForEachChildArray(Box::new(Action::Expression(
+                    Expression::Attribute("abc".into()),
+                    None,
+                )))
+                .into(),
+            ),
+        ),
+    )]
+    .into_iter()
+    .collect();
+
+    assert_eq!(object("{foo: .bar | [@(abc)]}"), Ok(("", expected)));
+}
+
+#[test]
+fn test_array_nested() {
+    let expected: HashMap<&str, Action> = vec![(
+        "foo",
+        Action::Expression(
+            Expression::Selector(Selector::parse(".bar").unwrap(), ".bar ".into()),
+            Some(
+                Action::ForEachChildArray(
+                    Action::Expression(
+                        Expression::Selector(Selector::parse(".lol ").unwrap(), ".lol ".into()),
+                        Some(
+                            Action::Expression(
+                                Expression::Selector(Selector::parse("bar").unwrap(), "bar".into()),
+                                None,
+                            )
+                            .into(),
+                        ),
+                    )
+                    .into(),
+                )
+                .into(),
+            ),
+        ),
+    )]
+    .into_iter()
+    .collect();
+
+    assert_eq!(object("{foo: .bar | [.lol | bar]}"), Ok(("", expected)));
 }
