@@ -88,7 +88,7 @@ fn handle_expression(
     };
 }
 
-fn convert_to_output<'a>(item: &Action, roots: &Vec<ElementRef<'a>>) -> Value {
+fn convert_to_output(item: &Action, roots: &Vec<ElementRef>) -> Value {
     return match item {
         Action::ForEachChild(hashmap) => Value::Array(
             roots
