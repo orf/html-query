@@ -177,6 +177,7 @@ jobs:
           command: check
 
       - uses: actions-rs/clippy-check@v1
+        if: success() || failure()
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: --all-features
