@@ -153,6 +153,7 @@ fn main() -> anyhow::Result<()> {
             };
             let output = parse_string(input_str.as_str(), res);
             serde_json::to_writer(std::io::stdout().lock(), &output)?;
+            println!();
         }
         Err(e) => {
             eprintln!(
