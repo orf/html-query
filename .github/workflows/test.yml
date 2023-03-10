@@ -175,8 +175,21 @@ jobs:
         with:
           command: check
 
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: clippy
+
       - uses: actions-rs/clippy-check@v1
-        if: success() || failure()
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: --all-features
