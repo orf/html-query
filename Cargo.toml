@@ -1,6 +1,6 @@
 [package]
 name = "html-query"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 authors = ["Tom Forbes <tom@tomforb.es>"]
 repository = "https://github.com/orf/hq"
