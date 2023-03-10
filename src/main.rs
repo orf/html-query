@@ -6,6 +6,7 @@ use markup5ever::{LocalName, Namespace, QualName};
 use nom::Finish;
 use scraper::{ElementRef, Html};
 use serde_json::{Map, Value};
+use std::collections::HashMap;
 use std::io::Read;
 use std::path::PathBuf;
 use std::{fs, io};
@@ -32,6 +33,10 @@ pub enum ExpressionError {
     EmptyRoot,
 }
 
+fn trim_whitespace(input: String) -> String {
+    input.trim().to_string()
+}
+
 fn handle_expression(
     roots: &[ElementRef],
     rhs: &Expression,
@@ -45,7 +50,9 @@ fn handle_expression(
                 .first()
                 .ok_or_else(|| ExpressionError::EmptySelector(original_selector.clone()))?;
             match lhs {
-                None => Ok(Value::String(first_new_root.text().collect())),
+                None => Ok(Value::String(trim_whitespace(
+                    first_new_root.text().collect(),
+                ))),
                 Some(lhs) => Ok(convert_to_output(lhs, &new_roots)),
             }
         }
@@ -59,11 +66,13 @@ fn handle_expression(
                     Namespace::from(""),
                     LocalName::from(attr.as_str()),
                 ))
-                .map_or(Value::Null, |v| Value::String(v.to_string())))
+                .map_or(Value::Null, |v| {
+                    Value::String(trim_whitespace(v.to_string()))
+                }))
         }
         Expression::Text => {
             let first_root = roots.first().ok_or(ExpressionError::EmptyRoot)?;
-            Ok(Value::String(first_root.text().collect()))
+            Ok(Value::String(trim_whitespace(first_root.text().collect())))
         }
         Expression::Parent => {
             let first_root = roots.first().ok_or(ExpressionError::EmptyRoot)?;
@@ -119,6 +128,16 @@ fn convert_to_output(item: &Action, roots: &Vec<ElementRef>) -> Value {
     };
 }
 
+fn parse_string(input: &str, actions: HashMap<&str, Action>) -> Value {
+    let fragment = Html::parse_fragment(input);
+    let root = fragment.root_element();
+    let hashmap = actions
+        .into_iter()
+        .map(|(key, value)| (key.to_string(), convert_to_output(&value, &vec![root])))
+        .collect();
+    Value::Object(hashmap)
+}
+
 fn main() -> anyhow::Result<()> {
     let args: Args = Args::parse();
     match parser::object(&args.query).finish() {
@@ -131,13 +150,7 @@ fn main() -> anyhow::Result<()> {
                 }
                 Some(path) => fs::read_to_string(path)?,
             };
-            let fragment = Html::parse_fragment(input_str.as_str());
-            let root = fragment.root_element();
-            let hashmap: Map<_, _> = res
-                .into_iter()
-                .map(|(key, value)| (key.to_string(), convert_to_output(&value, &vec![root])))
-                .collect();
-            let output = Value::Object(hashmap);
+            let output = parse_string(input_str.as_str(), res);
             serde_json::to_writer(std::io::stdout().lock(), &output)?;
         }
         Err(e) => {
@@ -148,4 +161,22 @@ fn main() -> anyhow::Result<()> {
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    // Note this useful idiom: importing names from outer (for mod tests) scope.
+    use super::*;
+
+    #[test]
+    fn test_parse_whitespace() {
+        let html = include_str!("tests/whitespace.html");
+        let (_, expr) = parser::object("{foo: h1}").finish().unwrap();
+        assert_eq!(
+            parse_string(html, expr),
+            serde_json::json!({
+                "foo": "This is some whitespace"
+            })
+        )
+    }
 }
