@@ -12,16 +12,17 @@ use std::path::PathBuf;
 use std::{fs, io};
 use thiserror::Error;
 
-/// Simple program to greet a person
+/// jq, but for HTML
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    /// Name of the person to greet
+    /// Query describing data to extract
     #[arg(index = 1)]
     query: String,
 
-    #[arg(short, long)]
-    input: Option<PathBuf>,
+    /// Input file. Uses stdin if not given.
+    #[arg(index = 2)]
+    input_file: Option<PathBuf>,
 }
 
 #[derive(Error, Debug)]
@@ -142,7 +143,7 @@ fn main() -> anyhow::Result<()> {
     let args: Args = Args::parse();
     match parser::object(&args.query).finish() {
         Ok((_, res)) => {
-            let input_str = match args.input {
+            let input_str = match args.input_file {
                 None => {
                     let mut buf = String::new();
                     io::stdin().lock().read_to_string(&mut buf)?;
