@@ -9,7 +9,7 @@ description = "jq, but for HTML"
 
 [dependencies]
 anyhow = "1.0.70"
-clap = { version = "4.1.13", features = ["derive"] }
+clap = { version = "4.2.1", features = ["derive"] }
 markup5ever = "0.11.0"
 nom = "7.1.3"
 nom-supreme = "0.8.0"
