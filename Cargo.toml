@@ -16,7 +16,7 @@ nom-supreme = "0.8.0"
 pest = "2.5.5"
 pest_derive = "2.5.2"
 scraper = "0.16.0"
-serde_json = "1.0.93"
+serde_json = "1.0.96"
 thiserror = "1.0.40"
 
 [[bin]]
