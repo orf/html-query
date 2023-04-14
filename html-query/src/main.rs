@@ -54,9 +54,9 @@ mod tests {
     #[test]
     fn test_parse_whitespace() {
         let html = include_str!("tests/whitespace.html");
-        let expr = parse_string("{foo: h1}").finish().unwrap();
+        let expr = parse_string("{foo: h1}").unwrap();
         assert_eq!(
-            extract(html, expr),
+            extract(html, &expr),
             serde_json::json!({
                 "foo": "This is some whitespace"
             })
