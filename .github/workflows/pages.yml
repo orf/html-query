@@ -27,7 +27,7 @@ jobs:
         shell: bash
         run: cargo install dioxus-cli
       - name: Build debug
-        if: ${{ !startsWith(github.event.inputs.from_branch, 'release/') }}
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         shell: bash
         run: dioxus build
       - name: Build Release
