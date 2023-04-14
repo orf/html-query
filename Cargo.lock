@@ -998,6 +998,7 @@ dependencies = [
  "html-query-extractor",
  "serde",
  "serde_json",
+ "wasm-bindgen",
  "web-sys",
 ]
 
