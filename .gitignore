@@ -1,2 +1,4 @@
 /target
 .idea/
+*/dist/
+.DS_Store

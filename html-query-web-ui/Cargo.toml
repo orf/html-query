@@ -1,0 +1,19 @@
+[package]
+name = "html-query-web-ui"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+dioxus = "0.3.2"
+dioxus-web = "0.3.1"
+getrandom = { version = "0.2", features = ["js"] }
+html-query-ast = {version="0.1.0", path= "../html-query-ast" }
+html-query-extractor = {version="0.1.0", path= "../html-query-extractor" }
+serde_json = { version = "1.0.96", default-features = false }
+web-sys = { version = "0.3.61", features = ["console"] }
+serde = { version = "1.0.160", features = ["derive"] }
+
+[package.metadata.release]
+release = false

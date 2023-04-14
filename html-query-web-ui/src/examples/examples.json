@@ -1,0 +1,15 @@
+{
+  "name": "Hacker News",
+  "url": "https://news.ycombinator.com/",
+  "content": "hn.html",
+  "examples": [
+    {
+      "expression": "{posts: .athing | [ {title: .titleline > a, url: .titleline > a | @(href)} ] }",
+      "description": "Hacker news titles"
+    },
+    {
+      "expression": "{posts: .athing | [{href: .titleline > a | @(href), title: .titleline > a, meta: @sibling(1) | {user: .hnuser, posted: .age | @(title) }}]}",
+      "description": "Full hacker news information"
+    }
+  ]
+}

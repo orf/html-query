@@ -1,29 +1,11 @@
-mod parser;
-
-use crate::parser::{Action, Expression};
-use clap::Parser;
+use html_query_ast::Action;
+use html_query_ast::Expression;
 use markup5ever::{LocalName, Namespace, QualName};
-use nom::Finish;
 use scraper::{ElementRef, Html};
 use serde_json::{Map, Value};
 use std::collections::HashMap;
-use std::io::Read;
-use std::path::PathBuf;
-use std::{fs, io};
+
 use thiserror::Error;
-
-/// jq, but for HTML
-#[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
-struct Args {
-    /// Query describing data to extract
-    #[arg(index = 1)]
-    query: String,
-
-    /// Input file. Uses stdin if not given.
-    #[arg(index = 2)]
-    input_file: Option<PathBuf>,
-}
 
 #[derive(Error, Debug)]
 pub enum ExpressionError {
@@ -129,7 +111,7 @@ fn convert_to_output(item: &Action, roots: &Vec<ElementRef>) -> Value {
     };
 }
 
-fn parse_string(input: &str, actions: HashMap<&str, Action>) -> Value {
+pub fn extract(input: &str, actions: &HashMap<&str, Action>) -> Value {
     let fragment = Html::parse_fragment(input);
     let root = fragment.root_element();
     let hashmap = actions
@@ -137,48 +119,4 @@ fn parse_string(input: &str, actions: HashMap<&str, Action>) -> Value {
         .map(|(key, value)| (key.to_string(), convert_to_output(&value, &vec![root])))
         .collect();
     Value::Object(hashmap)
-}
-
-fn main() -> anyhow::Result<()> {
-    let args: Args = Args::parse();
-    match parser::object(&args.query).finish() {
-        Ok((_, res)) => {
-            let input_str = match args.input_file {
-                None => {
-                    let mut buf = String::new();
-                    io::stdin().lock().read_to_string(&mut buf)?;
-                    buf
-                }
-                Some(path) => fs::read_to_string(path)?,
-            };
-            let output = parse_string(input_str.as_str(), res);
-            serde_json::to_writer(std::io::stdout().lock(), &output)?;
-            println!();
-        }
-        Err(e) => {
-            eprintln!(
-                "Error parsing:\n{}",
-                parser::format_error(args.query.as_str(), e)
-            );
-        }
-    }
-    Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    // Note this useful idiom: importing names from outer (for mod tests) scope.
-    use super::*;
-
-    #[test]
-    fn test_parse_whitespace() {
-        let html = include_str!("tests/whitespace.html");
-        let (_, expr) = parser::object("{foo: h1}").finish().unwrap();
-        assert_eq!(
-            parse_string(html, expr),
-            serde_json::json!({
-                "foo": "This is some whitespace"
-            })
-        )
-    }
 }

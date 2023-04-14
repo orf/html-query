@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{app_title}</title>
+  <meta content="text/html;charset=utf-8" http-equiv="Content-Type"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/9000.0.1/themes/prism.min.css"
+        integrity="sha512-/mZ1FHPkg6EKcxo0fKXF51ak6Cr2ocgDi5ytaTBjsQZIH/RNs6GF6+oId/vPe3eJB836T36nXwVh/WBl/cWT4w=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"/>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/9000.0.1/prism.min.js"
+          integrity="sha512-UOoJElONeUNzQbbKQbjldDf9MwOHqxNz49NNJJ1d90yp+X9edsHyJoAs6O4K19CZGaIdjI5ohK+O2y5lBTW6uQ=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  {style_include}
+</head>
+<body>
+<section class="section">
+  <div class="container">
+    <div id="main"></div>
+  </div>
+</section>
+
+<script type="module">
+    import init from "./assets/dioxus/{app_name}.js";
+
+    init("./assets/dioxus/{app_name}_bg.wasm").then(wasm => {
+        if (wasm.__wbindgen_start == undefined) {
+            wasm.main();
+        }
+    });
+</script>
+{script_include}
+</body>
+</html>
