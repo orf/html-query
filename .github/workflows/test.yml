@@ -1,7 +1,7 @@
 on:
   push:
     tags:
-      - v*
+      - 'html-query-v*'
     branches:
       - main
   pull_request:

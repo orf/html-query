@@ -1,8 +1,10 @@
 name: Publish pages
+concurrency: "pages"
+
 on:
   push:
     tags:
-      - v*
+      - 'html-query-*'
 
 jobs:
   # Build job
