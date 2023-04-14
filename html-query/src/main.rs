@@ -32,7 +32,7 @@ fn main() -> anyhow::Result<()> {
                 }
                 Some(path) => fs::read_to_string(path)?,
             };
-            let output = extract(input_str.as_str(), res);
+            let output = extract(input_str.as_str(), &res);
             serde_json::to_writer(std::io::stdout().lock(), &output)?;
             println!();
         }
