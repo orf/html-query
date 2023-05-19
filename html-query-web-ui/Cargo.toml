@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 dioxus = "0.3.2"
-dioxus-web = "0.3.1"
+dioxus-web = "0.3.2"
 getrandom = { version = "0.2", features = ["js"] }
 html-query-ast = {version= "0.1.1", path= "../html-query-ast" }
 html-query-extractor = {version= "0.1.1", path= "../html-query-extractor" }

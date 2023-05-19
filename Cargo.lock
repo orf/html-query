@@ -604,11 +604,12 @@ dependencies = [
 
 [[package]]
 name = "dioxus-web"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a90cda9fc7992af131b4ce468ea4740669fb18983c209f9b95572e5fea82a57e"
+checksum = "e7609e4635a0061dc2b0c01fd8f1a9dd3cb27ee786feed2e5a5cedc1110f1d44"
 dependencies = [
  "anyhow",
+ "async-trait",
  "console_error_panic_hook",
  "dioxus-core",
  "dioxus-html",
