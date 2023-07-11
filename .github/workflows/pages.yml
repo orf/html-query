@@ -37,7 +37,7 @@ jobs:
 
       - name: Upload artifact
         if: startsWith(github.ref, 'refs/tags/')
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v2
         with:
           path: ./html-query-web-ui/dist/
 
