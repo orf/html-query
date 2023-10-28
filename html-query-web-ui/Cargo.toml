@@ -6,8 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-dioxus = "0.3.2"
-dioxus-web = "0.3.1"
+dioxus = "0.4.0"
+dioxus-web = "0.4.0"
 getrandom = { version = "0.2", features = ["js"] }
 html-query-ast = {version= "0.1.1", path= "../html-query-ast" }
 html-query-extractor = {version= "0.1.1", path= "../html-query-extractor" }
