@@ -116,8 +116,8 @@ pub fn extract(input: &str, actions: &HashMap<&str, Action>) -> Value {
     let root = fragment.root_element();
     println!("html: {}", root.html());
     let hashmap = actions
-        .into_iter()
-        .map(|(key, value)| (key.to_string(), convert_to_output(&value, &vec![root])))
+        .iter()
+        .map(|(key, value)| (key.to_string(), convert_to_output(value, &vec![root])))
         .collect();
     Value::Object(hashmap)
 }

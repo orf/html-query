@@ -63,7 +63,6 @@ extern "C" {
 //     type Provider;
 // }
 
-
 #[inline_props]
 fn Examples<'a>(cx: Scope<'a>, on_input: EventHandler<'a, ExampleTuple<'a>>) -> Element {
     let examples: Examples = serde_json::from_str(include_str!("examples/examples.json")).unwrap();
