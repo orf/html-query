@@ -45,6 +45,15 @@ jobs:
         uses: actions/upload-pages-artifact@v2
         with:
           path: ./html-query-web-ui/dist/
+          retention-days: 1
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        with:
+          fail_on_unmatched_files: true
+          files: |
+            ./html-query-web-ui/dist/
 
   # Deploy job
   deploy:
