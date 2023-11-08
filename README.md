@@ -31,7 +31,34 @@ The end result is the following structure:
 
 ## Install
 
-`cargo install html-query`
+`brew install hq`, or `cargo install html-query`
+
+## Special query syntax
+
+### Text
+
+`.foo | @text`
+
+This will select the text content from the first element matching `.foo`.
+
+### Selecting attributes
+
+`.foo | @(href)`
+
+This will select the `href` attribute from the first element matching `.foo`.
+
+### Parents
+
+`.foo | @parent`
+
+This will return the parent element from the first element matching `.foo`.
+
+### Siblings
+
+`.foo | @sibling(1)`
+
+This will return the sibling element from the first element matching `.foo`. 
+
 
 ## Examples
 
@@ -58,23 +85,3 @@ the _sibling_ `.athing` element, and extracts the user and post time from that:
   ]
 }
 ```
-
-## Special query syntax
-
-### Selecting attributes
-
-`.foo | @(href)`
-
-This will select the `href` attribute from the first element matching `.foo`.
-
-### Parents
-
-`.foo | @parent`
-
-This will return the parent element from the first element matching `.foo`.
-
-### Siblings
-
-`.foo | @sibling(1)`
-
-This will return the sibling element from the first element matching `.foo`. 
