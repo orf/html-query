@@ -29,7 +29,6 @@ jobs:
       - name: Install tools
         shell: bash
         run: cargo install dioxus-cli
-
       - name: Build debug
         if: !startsWith(github.ref, 'refs/tags/') && github.event_name != 'workflow_dispatch'
         shell: bash
