@@ -16,8 +16,10 @@ asset_dir = "public"
 
 sub_package = "html-query-web-ui"
 
+
 [web.app]
 
+base_path = "html-query"
 # HTML title tag content
 title = "HTML Query playground"
 
