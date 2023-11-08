@@ -98,54 +98,6 @@ jobs:
         with:
           command: test
 
-  #  cross_builds:
-  #    name: Cross-build
-  #    runs-on: ubuntu-latest
-  #    strategy:
-  #      matrix:
-  #        target:
-  #          - armv7-linux-androideabi
-  #          - armv7-unknown-linux-gnueabihf
-  #          - armv7-unknown-linux-musleabihf
-  #    steps:
-  #      - uses: actions/checkout@v4
-  #
-  #      - uses: actions-rs/toolchain@v1
-  #        with:
-  #          toolchain: stable
-  #          target: ${{ matrix.target }}
-  #          override: true
-  #      - uses: Swatinem/rust-cache@v2
-  #      - uses: actions-rs/cargo@v1
-  #        with:
-  #          use-cross: true
-  #          command: check
-  #          args: --target ${{ matrix.target }}
-  #      - uses: actions-rs/cargo@v1
-  #        with:
-  #          use-cross: true
-  #          command: test
-  #          args: --target ${{ matrix.target }}
-  #      - uses: actions-rs/cargo@v1
-  #        if: startsWith(github.ref, 'refs/tags/')
-  #        with:
-  #          use-cross: true
-  #          command: build
-  #          args: --target ${{ matrix.target }} --release
-  #      - name: Package
-  #        if: startsWith(github.ref, 'refs/tags/')
-  #        shell: bash
-  #        run: |
-  #          cd target/${{ matrix.target }}/release/
-  #          tar czvf ../../../hq-${{ matrix.target }}.tar.gz hq
-  #          cd -
-  #      - name: Publish
-  #        uses: softprops/action-gh-release@v1
-  #        if: startsWith(github.ref, 'refs/tags/')
-  #        with:
-  #          draft: false
-  #          files: 'hq*'
-
   checks:
     name: Checks
     runs-on: ubuntu-latest
