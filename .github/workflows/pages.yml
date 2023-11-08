@@ -54,7 +54,6 @@ jobs:
           files: |
             ./html-query-web-ui/dist/
 
-  # Deploy job
   deploy:
     # Add a dependency to the build job
     needs: build
