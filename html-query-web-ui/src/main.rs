@@ -4,19 +4,16 @@
 use dioxus::prelude::*;
 use html_query_ast::parse_string;
 use html_query_extractor::extract;
+use log::LevelFilter;
 use serde::Deserialize;
 
 fn main() {
     // launch the web app
-    dioxus_web::launch(App);
-}
+    dioxus_logger::init(LevelFilter::Info).expect("failed to init logger");
+    console_error_panic_hook::set_once();
 
-#[derive(Deserialize)]
-pub struct Examples {
-    name: &'static str,
-    url: &'static str,
-    content: &'static str,
-    examples: Vec<Example>,
+    log::info!("starting app");
+    dioxus_web::launch(app);
 }
 
 #[derive(Deserialize)]
@@ -25,28 +22,20 @@ pub struct Example {
     description: &'static str,
 }
 
-extern crate web_sys;
-
-static HN_CONTENT: &'static str = include_str!("examples/hn.html");
+static HN_CONTENT: &str = include_str!("examples/hn.html");
 
 type ExampleTuple<'a> = (&'static str, &'static str);
 
-use wasm_bindgen::prelude::*;
-
-#[wasm_bindgen]
-extern "C" {
-    fn html_beautify(s: &str) -> JsValue;
-}
-
 #[inline_props]
 fn Examples<'a>(cx: Scope<'a>, on_input: EventHandler<'a, ExampleTuple<'a>>) -> Element {
-    let examples: Examples = serde_json::from_str(include_str!("examples/examples.json")).unwrap();
+    let examples: Vec<Example> =
+        serde_json::from_str(include_str!("examples/examples.json")).unwrap();
 
-    let buttons = examples.examples.into_iter().map(|ex| {
+    let buttons = examples.into_iter().map(|ex| {
         rsx!(
             button {
                 class: "button",
-                onclick: move |event| { on_input.call((HN_CONTENT, &ex.expression)) },
+                onclick: move |_event| { on_input.call((HN_CONTENT, &ex.expression)) },
                 "{ex.description}"
             }
         )
@@ -59,7 +48,7 @@ fn Examples<'a>(cx: Scope<'a>, on_input: EventHandler<'a, ExampleTuple<'a>>) -> 
     })
 }
 
-fn App(cx: Scope) -> Element {
+fn app(cx: Scope) -> Element {
     let expression = use_state(cx, || "{}".to_string());
     let parsed = parse_string(expression);
     let html = use_state(cx, || "foo".to_string());
@@ -98,18 +87,11 @@ fn App(cx: Scope) -> Element {
         }
 
         div { class: "columns",
-            div { class: "column",
-                textarea {
-                    value: "{html}",
-                    class: "textarea",
-                    oninput: move |evt| html.set(evt.value.clone())
-                }
-                button {
-                    class: "button",
-                    onclick: move |event| { html.set(html_beautify(html.get()).as_string().unwrap()) },
-                    "Format HTML"
-                }
-            }
+            div { class: "column", textarea {
+                value: "{html}",
+                class: "textarea",
+                oninput: move |evt| html.set(evt.value.clone())
+            } }
 
             div { class: "column",
                 pre { style: "white-space: pre-wrap;", code { "{output}" } }

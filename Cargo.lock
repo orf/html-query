@@ -443,6 +443,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "dioxus-logger"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3d7cbab0b5519060fe9e14b3c21e3f2329b8386cd905618f78c7b929cd00cf54"
+dependencies = [
+ "log",
+ "web-sys",
+]
+
+[[package]]
 name = "dioxus-rsx"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -702,15 +712,16 @@ dependencies = [
 name = "html-query-web-ui"
 version = "0.1.0"
 dependencies = [
+ "console_error_panic_hook",
  "dioxus",
+ "dioxus-logger",
  "dioxus-web",
  "getrandom",
  "html-query-ast",
  "html-query-extractor",
+ "log",
  "serde",
  "serde_json",
- "wasm-bindgen",
- "web-sys",
 ]
 
 [[package]]
