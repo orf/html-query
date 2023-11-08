@@ -2,7 +2,7 @@
 
 // import the prelude to get access to the `rsx!` macro and the `Scope` and `Element` types
 use dioxus::prelude::*;
-use html_query_ast::{parse_string};
+use html_query_ast::parse_string;
 use html_query_extractor::extract;
 use serde::Deserialize;
 
