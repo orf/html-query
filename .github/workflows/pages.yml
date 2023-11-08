@@ -3,6 +3,8 @@ concurrency: "pages"
 
 on:
   push:
+    branches:
+      - '*'
     tags:
       - 'html-query-*'
 
@@ -29,11 +31,11 @@ jobs:
       - name: Build debug
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         shell: bash
-        run: dioxus build
+        run: dx build
       - name: Build Release
         if: startsWith(github.ref, 'refs/tags/')
         shell: bash
-        run: dioxus build --release
+        run: dx build --release
 
       - name: Upload artifact
         if: startsWith(github.ref, 'refs/tags/')
