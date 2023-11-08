@@ -25,10 +25,14 @@ jobs:
         with:
           toolchain: stable
           target: wasm32-unknown-unknown
+
       - uses: Swatinem/rust-cache@v2
-      - name: Install tools
+
+      - name: Install dioxus
         shell: bash
-        run: cargo install dioxus-cli
+        run: |
+          cargo install dioxus-cli
+
       - name: Build debug
         if: !startsWith(github.ref, 'refs/tags/') && github.event_name != 'workflow_dispatch'
         shell: bash
