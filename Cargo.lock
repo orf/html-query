@@ -679,7 +679,7 @@ checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
 
 [[package]]
 name = "html-query"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
  "anyhow",
  "clap",
@@ -690,7 +690,7 @@ dependencies = [
 
 [[package]]
 name = "html-query-ast"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "nom",
  "nom-supreme",
@@ -699,7 +699,7 @@ dependencies = [
 
 [[package]]
 name = "html-query-extractor"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "html-query-ast",
  "markup5ever",
