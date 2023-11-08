@@ -55,6 +55,8 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         with:
           fail_on_unmatched_files: true
+          tag_name: latest
+          name: latest
           files: |
             ./html-query-web-ui/dist/
 
