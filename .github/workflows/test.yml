@@ -32,7 +32,7 @@ jobs:
     env:
       RUST_BACKTRACE: "1"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
@@ -83,7 +83,7 @@ jobs:
     container:
       image: alpine:latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: apk add libgcc gcc musl-dev
 
       - name: Install Rust
@@ -108,7 +108,7 @@ jobs:
 #          - armv7-unknown-linux-gnueabihf
 #          - armv7-unknown-linux-musleabihf
 #    steps:
-#      - uses: actions/checkout@v3
+#      - uses: actions/checkout@v4
 #
 #      - uses: actions-rs/toolchain@v1
 #        with:
@@ -151,7 +151,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
