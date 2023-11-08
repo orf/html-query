@@ -15,7 +15,6 @@
           crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify.min.js"></script>
-<!--  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-css.min.js"></script>-->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify-html.min.js"></script>
   {style_include}
 </head>
@@ -26,15 +25,6 @@
   </div>
 </section>
 
-<script type="module">
-    import init from "./assets/dioxus/{app_name}.js";
-
-    init("./assets/dioxus/{app_name}_bg.wasm").then(wasm => {
-        if (wasm.__wbindgen_start == undefined) {
-            wasm.main();
-        }
-    });
-</script>
 {script_include}
 </body>
 </html>
