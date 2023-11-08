@@ -58,7 +58,7 @@ jobs:
           tag_name: latest
           name: latest
           files: |
-            ./html-query-web-ui/dist/**/*
+            html-query-web-ui/dist/**/*
 
   deploy:
     # Add a dependency to the build job
