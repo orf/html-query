@@ -1,4 +1,6 @@
 [workspace]
 resolver = "2"
 
+default-members = ["html-query"]
+
 members = ["html-query", "html-query-ast", "html-query-extractor", "html-query-web-ui"]
