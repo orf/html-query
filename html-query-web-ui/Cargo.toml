@@ -10,8 +10,8 @@ edition = "2021"
 dioxus = "0.4.0"
 dioxus-web = "0.4.0"
 getrandom = { version = "0.2", features = ["js"] }
-html-query-ast = {version= "0.2.1", path= "../html-query-ast" }
-html-query-extractor = {version= "0.2.1", path= "../html-query-extractor" }
+html-query-ast = {version= "0.2.2", path= "../html-query-ast" }
+html-query-extractor = {version= "0.2.2", path= "../html-query-extractor" }
 serde_json = { version = "1.0.96", default-features = false }
 serde = { version = "1.0.193", features = ["derive"] }
 

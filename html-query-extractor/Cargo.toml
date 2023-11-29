@@ -1,6 +1,6 @@
 [package]
 name = "html-query-extractor"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 authors = ["Tom Forbes <tom@tomforb.es>"]
 repository = "https://github.com/orf/hq"
@@ -12,4 +12,4 @@ markup5ever = "0.11.0"
 serde_json = "1.0.93"
 scraper = "0.18.0"
 thiserror = "1.0.40"
-html-query-ast = {version= "0.2.1", path= "../html-query-ast" }
+html-query-ast = {version= "0.2.2", path= "../html-query-ast" }
