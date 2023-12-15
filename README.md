@@ -2,7 +2,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/html-query.svg)](https://crates.io/crates/html-query)
 
-jq, but for HTML. [Try it in your browser here](https://orf.github.io/hq/)
+jq, but for HTML. [Try it in your browser here](https://orf.github.io/html-query/)
 
 ![](./images/readme-example.gif)
 
