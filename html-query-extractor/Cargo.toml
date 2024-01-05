@@ -9,7 +9,7 @@ description = "HTML extractor for hq: jq, but for HTML"
 
 [dependencies]
 markup5ever = "0.11.0"
-serde_json = "1.0.93"
+serde_json = "1.0.109"
 scraper = "0.18.0"
-thiserror = "1.0.40"
+thiserror = "1.0.56"
 html-query-ast = {version= "0.2.2", path= "../html-query-ast" }
