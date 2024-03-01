@@ -12,4 +12,4 @@ description = "Expression parser for hq: jq, but for HTML"
 [dependencies]
 nom = "7.1.3"
 nom-supreme = "0.8.0"
-scraper = "0.18.0"
+scraper = "0.19.0"
