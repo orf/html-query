@@ -6,7 +6,7 @@ authors = ["Tom Forbes <tom@tomforb.es>"]
 repository = "https://github.com/orf/hq"
 license = "MIT"
 description = "jq, but for HTML"
-readme = "../README.md"
+readme = "../../README.md"
 
 [dependencies]
 clap = { version = "4.4.11", features = ["derive"] }

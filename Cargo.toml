@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
 
-default-members = ["html-query"]
+default-members = ["crates/html-query"]
 
-members = ["html-query", "html-query-ast", "html-query-extractor", "html-query-web-ui"]
+members = ["crates/html-query", "crates/html-query-ast", "crates/html-query-extractor", "crates/html-query-web-ui"]
