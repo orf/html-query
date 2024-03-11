@@ -59,14 +59,14 @@ jobs:
           tar czf wasm.tar.gz --directory=html-query-web-ui/dist/ .
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
           draft: false
           files: wasm.tar.gz
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: github.event_name == 'workflow_dispatch'
         with:
           draft: false
