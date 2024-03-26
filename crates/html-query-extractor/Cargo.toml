@@ -8,8 +8,8 @@ license = "MIT"
 description = "HTML extractor for hq: jq, but for HTML"
 
 [dependencies]
-markup5ever = "0.11.0"
+markup5ever = "0.12.0"
 serde_json = "1.0.93"
 scraper = "0.19.0"
-thiserror = "1.0.40"
+thiserror = "1.0.58"
 html-query-ast = {version= "0.2.2", path= "../html-query-ast" }
