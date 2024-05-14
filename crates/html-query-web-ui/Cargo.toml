@@ -7,16 +7,16 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-dioxus = "0.4.3"
-dioxus-web = "0.4.3"
+dioxus = "0.5.1"
+dioxus-web = "0.5.1"
 getrandom = { version = "0.2", features = ["js"] }
 html-query-ast = {version= "0.2.2", path= "../html-query-ast" }
 html-query-extractor = {version= "0.2.2", path= "../html-query-extractor" }
-serde_json = { version = "1.0.96", default-features = false }
-serde = { version = "1.0.193", features = ["derive"] }
+serde_json = { version = "1.0.117", default-features = false }
+serde = { version = "1.0.201", features = ["derive"] }
 
 log = "0.4.19"
-dioxus-logger = "0.4.1"
+dioxus-logger = "0.5.1"
 console_error_panic_hook = "0.1.7"
 
 [package.metadata.release]
