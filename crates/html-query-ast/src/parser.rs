@@ -9,7 +9,7 @@ use nom::sequence::{pair, terminated};
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{alphanumeric1, char, multispace0},
+    character::complete::{char, multispace0},
     combinator::map,
     error::ParseError,
     multi::separated_list0,
@@ -49,12 +49,19 @@ fn ws<'a, O, E: ParseError<&'a str>, F: Parser<&'a str, O, E>>(f: F) -> impl Par
     delimited(multispace0, f, multispace0)
 }
 
+fn alphanum_dash_underscore1(i: &str) -> IResult<&str, &str, VerboseError<&str>> {
+    take_while1(|c: char| c.is_alphanumeric() || c == '_' || c == '-')(i)
+}
+
 fn object_key(i: &str) -> IResult<&str, &str, VerboseError<&str>> {
-    terminated(alphanumeric1, char(':'))(i)
+    terminated(alphanum_dash_underscore1, char(':'))(i)
 }
 
 fn object_key_suffix(i: &str) -> IResult<&str, &str, VerboseError<&str>> {
-    preceded(ws(tag(",")), terminated(alphanumeric1, char(':')))(i)
+    preceded(
+        ws(tag(",")),
+        terminated(alphanum_dash_underscore1, char(':')),
+    )(i)
 }
 
 fn expression_rhs(i: &str) -> IResult<&str, Expression, VerboseError<&str>> {
