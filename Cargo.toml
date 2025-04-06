@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
-
 default-members = ["crates/html-query"]
-
 members = ["crates/html-query", "crates/html-query-ast", "crates/html-query-extractor", "crates/html-query-web-ui"]
+
+[workspace.dependencies]
+scraper = "0.23.1"

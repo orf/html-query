@@ -1,6 +1,5 @@
 use html_query_ast::Action;
 use html_query_ast::Expression;
-use markup5ever::{LocalName, Namespace, QualName};
 use scraper::{ElementRef, Html};
 use serde_json::{Map, Value};
 use std::collections::HashMap;
@@ -43,12 +42,7 @@ fn handle_expression(
             let first_root = roots.first().ok_or(ExpressionError::EmptyRoot)?;
             Ok(first_root
                 .value()
-                .attrs
-                .get(&QualName::new(
-                    None,
-                    Namespace::from(""),
-                    LocalName::from(attr.as_str()),
-                ))
+                .attr(attr.as_str())
                 .map_or(Value::Null, |v| {
                     Value::String(trim_whitespace(v.to_string()))
                 }))
