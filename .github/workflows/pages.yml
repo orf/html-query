@@ -17,20 +17,22 @@ jobs:
   # Build job
   build:
     runs-on: ubuntu-latest
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+      RUSTC_WRAPPER: "sccache"
     steps:
       - uses: actions/checkout@v4
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-      - name: Install WASM
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: wasm32-unknown-unknown
 
-      - uses: Swatinem/rust-cache@v2
+      - name: Install Rust
+        id: rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          cache: 'false'
+          cache-on-failure: false
+          toolchain: stable,stable-wasm32-unknown-unknown
+
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.9
 
       - name: Install dioxus
         shell: bash
