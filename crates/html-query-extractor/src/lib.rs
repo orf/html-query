@@ -24,7 +24,7 @@ fn handle_expression(
     rhs: &Expression,
     lhs: &Option<Box<Action>>,
 ) -> Result<Value, ExpressionError> {
-    return match rhs {
+    match rhs {
         Expression::Selector(selector, original_selector) => {
             let first_root = roots.first().ok_or(ExpressionError::EmptyRoot)?;
             let new_roots: Vec<_> = first_root.select(selector).collect();
@@ -71,11 +71,11 @@ fn handle_expression(
                 Some(lhs) => Ok(convert_to_output(lhs, &vec![chosen_sibling])),
             }
         }
-    };
+    }
 }
 
 fn convert_to_output(item: &Action, roots: &Vec<ElementRef>) -> Value {
-    return match item {
+    match item {
         Action::ForEachChild(hashmap) => Value::Array(
             roots
                 .iter()
@@ -102,7 +102,7 @@ fn convert_to_output(item: &Action, roots: &Vec<ElementRef>) -> Value {
             Value::Object(map)
         }
         Action::Expression(rhs, lhs) => handle_expression(roots, rhs, lhs).unwrap_or(Value::Null),
-    };
+    }
 }
 
 pub fn extract(input: &str, actions: &HashMap<&str, Action>) -> Value {

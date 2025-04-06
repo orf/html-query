@@ -35,7 +35,7 @@ fn Examples<'a>(cx: Scope<'a>, on_input: EventHandler<'a, ExampleTuple<'a>>) -> 
         rsx!(
             button {
                 class: "button",
-                onclick: move |_event| { on_input.call((HN_CONTENT, &ex.expression)) },
+                onclick: move |_event| { on_input.call((HN_CONTENT, ex.expression)) },
                 "{ex.description}"
             }
         )
