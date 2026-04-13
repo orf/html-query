@@ -32,7 +32,7 @@ jobs:
     env:
       RUST_BACKTRACE: "1"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install Rust
         id: rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
@@ -60,7 +60,7 @@ jobs:
           fi
           cd -
       - name: Publish
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:
           draft: false
@@ -72,7 +72,7 @@ jobs:
     container:
       image: alpine:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: apk add libgcc gcc musl-dev bash curl
 
       - name: Install Rust
@@ -89,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install Rust
         id: rust
