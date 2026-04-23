@@ -13,7 +13,7 @@ jobs:
         id: extract-version
         run: |
           echo "VERSION=${GITHUB_REF#refs/tags/html-query-}" >> "$GITHUB_OUTPUT"
-      - uses: mislav/bump-homebrew-formula-action@v3
+      - uses: mislav/bump-homebrew-formula-action@v4
         with:
           formula-name: hq
           commit-message: |
